@@ -1,9 +1,17 @@
+---
+title: "Getting and Cleaning Data - Peer Project"
+author: "Eduardo Díez"
+date: "Sunday, June 08, 2014"
+output: html_document
+---
 datascitoolbox - Getting and Cleaning Data
 ==============
 
 The Data Scientist’s Toolbox by Jeff Leek course from COURSERA
 
+By student Eduardo Díez Báez
 
+```{r}
 # Let's state our root working directory where scripts and datasets are
 #
 curdir <- getwd()
@@ -111,4 +119,6 @@ write.table(FirstSubmissionDataset, "./Data/FirstSubmissionDataset.txt", sep="\t
 # **************
 #
 #
+
+```
 
