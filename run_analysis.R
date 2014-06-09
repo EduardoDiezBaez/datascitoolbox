@@ -1,3 +1,7 @@
+# This script generate two dataset files as state for the peer reviewed project of the course
+# Getting and Cleaning Data.
+# 
+
 # Let's state our root working directory where scripts and datasets are
 #
 curdir <- getwd()
@@ -59,12 +63,12 @@ y_test["myID"] <- c(1:tama[1])
 tmp<-merge(subject_test, y_test, by="myID", all=TRUE)
 names(tmp) <- c("myID", "volunter","activity")
 tmp["OriginalFile"] <- as.factor("test")
-my_test<-merge(tmp, X_test, by="myID", all=TRUE)
+my_testOrg<-merge(tmp, X_test, by="myID", all=TRUE)
 #
 # Finally we take out the columns we don't need, including the three we added above
 #my_test<-my_test[ , ColTotal]
 #
-my_test<-my_test[ , ColFinal]
+my_test<-my_testOrg[ , ColFinal]
 #
 # We repeate the same last procedure for the 'train' files
 #
@@ -79,12 +83,13 @@ y_train["myID"] <- c(1:tama[1])
 tmp<-merge(subject_train, y_train, by="myID", all=TRUE)
 names(tmp) <- c("myID", "volunter", "activity")
 tmp["OriginalFile"] <- as.factor("trainig")
-my_train<-merge(tmp, X_train, by="myID", all=TRUE)
+my_trainOrg<-merge(tmp, X_train, by="myID", all=TRUE)
 #
-my_train<-my_train[, ColFinal]
+my_train<-my_trainOrg[, ColFinal]
 #
 # Now, we need join both datasets
 #
+my_dataOrg <- rbind(my_testOrg, my_trainOrg)
 my_data <- rbind(my_test, my_train)
 #
 # And, we write down descriptive activity names to name the activities in the dataset
@@ -105,4 +110,48 @@ write.table(FirstSubmissionDataset, "./Data/FirstSubmissionDataset.txt", sep="\t
 # **************
 #
 #
+# 
+#
+# For the second submission dataset file we start from 'my_dataOrg' and we select by subject/volunter
+# and by activity type and calculate the mean for every one of the 561 variables and finally
+# we write a dataset with 180 cases (volunter X activity = 30 x 6 = 180) with every variable with 
+# the mean of each set measurement
+# **************
+#
+SecondSubmissionDataset<-0
+for (i in 1:30) {
+  for (j in 1:6) {
+    niveles=j
+    voluntario=i
+    
+    tmp<-subset(my_dataOrg, my_dataOrg$volunter==voluntario & my_dataOrg$activity==niveles)
+    dimension<-dim(tmp)
+    
+    l <- by(tmp[,5:dimension[2]], tmp$volunter==voluntario & tmp$activity==niveles, colMeans)
+    mynames<-names(tmp)
+    
+    linea<-0
+    mylinea<-0
+    linea<-do.call(c, l)
+    mylinea <- c("myID", voluntario, niveles, "OriginalFile", linea)
+    names(mylinea)<-mynames
+    
+    SecondSubmissionDataset<-rbind(SecondSubmissionDataset,mylinea)
+  }
+}
 
+SecondSubmissionDataset<-SecondSubmissionDataset[2:181,]
+SecondSubmissionDataset<-as.data.frame(SecondSubmissionDataset)
+ColFinal<-c(2,3,5:dimension[2])
+SecondSubmissionDataset<-SecondSubmissionDataset[,ColFinal]
+
+SecondSubmissionDataset[, "activity"] <- as.factor(SecondSubmissionDataset[, "activity"])
+activity_labels <- read.table("./Data/activity_labels.txt", quote="\"")
+activities<-activity_labels$V2
+levels(SecondSubmissionDataset$activity)<-activities
+row.names(SecondSubmissionDataset) <- 1:180
+# **************
+write.table(SecondSubmissionDataset, "./Data/SecondSubmissionDataset.txt", sep="\t")
+# **************
+#
+# End of the script
